@@ -1,0 +1,17 @@
+obj
+/bin
+.vs
+node_modules
+/assets/images/hashes.json
+/history
+/publish-hashes.json
+/screenshot.png
+/preview
+/server/bin/Microsoft.NodejsTools.WebRole.dll
+/public_html
+/website
+/assets/images/source/possibles
+/server/dist
+/server/website/*.html
+/server/website/sw.js
+/server/temp.json
