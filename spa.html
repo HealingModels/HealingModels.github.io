@@ -100,6 +100,9 @@
 		
 		xhr.onload = function() {
 			let response = self.replaceAmpImages(xhr.responseXML);
+			if (response === null) {
+				return true;
+			}
 			
 			document.title = response.title;
 			self.highlightMenu(url, response.querySelector(".nav-link-selected a"));
@@ -129,8 +132,11 @@
 			window.history.pushState(null, "", url);
 		}
 	}
-  
+
 	replaceAmpImages(response) {
+		if (response === null) {
+			return null;
+		}
 		let images = response.querySelectorAll("amp-img");
 		for (let i = 0; i < images.length; i++) {
 			if (images[i].parentElement.nodeName != "AMP-IMG") {
