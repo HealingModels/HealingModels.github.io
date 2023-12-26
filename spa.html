@@ -146,7 +146,7 @@
 		this.replaceAmpImages(response);
 		this.removeElements(response, "amp-position-observer");
 		this.removeElements(response, "amp-animation");
-		this.installScrollListener();
+		this.installScrollListener(response);
 	}
 
 	replaceAmpImages(response) {
@@ -326,26 +326,36 @@
   }
 
   inViewport(element) {
-	const { top, left, bottom, right } = element.getBoundingClientRect();
-    const { innerHeight, innerWidth } = window;	
-	return top >= 0;
+	let bounding = element.getBoundingClientRect();
+	let myElementHeight = element.offsetHeight;
+	let myElementWidth = element.offsetWidth;
+
+	return bounding.top >= -myElementHeight 
+		&& bounding.left >= -myElementWidth
+		&& bounding.right <= (window.innerWidth || document.documentElement.clientWidth) + myElementWidth
+		&& bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) + myElementHeight;
   }
 
-  installScrollListener() {
+  installScrollListener(response) {
 	document.removeEventListener("scroll", this.scrollListener);
 
 	let navbar = document.getElementById('navbarBackground');
-	let hasHighlightableMenu = document.getElementById('section1Wrapper') !== null;
-	let topWrapper = document.getElementById('topWrapper');
+	let hasHighlightableMenu = response.getElementById('section1Wrapper') !== null;
+	let topWrapper = response.getElementById('topWrapper');
 
 	if (navbar === null && !hasHighlightableMenu && topWrapper == null) {
 		return;
 	}
 
 	let self = this;
+	let lastY = window.scrollY;
+
 	this.scrollListener = (event => {
+		let isScrollingDown = window.scrollY >= lastY;
+		lastY = window.scrollY;
+
 		if (navbar !== null) {
-			navbar.style.opacity = window.scrollY === 0 ? 1 : 0;
+			navbar.style.opacity = lastY === 0 ? 1 : 0;
 		}
 
 		if (topWrapper !== null) {
@@ -353,13 +363,51 @@
 		}
 
 		if (hasHighlightableMenu) {
+			const highlightedIndex = self.determineWhichIndexToHighlight(lastY, isScrollingDown);
+			if (highlightedIndex === '') {
+				return;
+			}
+
 			Array.from(document.querySelectorAll(".navbar-nav li")).map(li => {
-				li.querySelector("div > div").style.setProperty("opacity", "0", "");
-				li.querySelector("span").style.setProperty("opacity", "1", "");
+				let isHighlighted = highlightedIndex === li.className;
+
+				const on = isHighlighted ? '1': '0';
+				const off = isHighlighted ? '0': '1';
+
+				li.querySelector("div > div").style.setProperty("opacity", on, "");
+				li.querySelector("span").style.setProperty("opacity", off, "");
 			});
 		}
 	});
 	document.addEventListener("scroll", this.scrollListener);
+  }
+
+  determineWhichIndexToHighlight(y, isScrollingDown) {
+	const sections = document.querySelectorAll('section');
+
+	let wrappers = [];
+	if (isScrollingDown) {
+		for (let i = sections.length - 1; i >= 0; i--) {
+			wrappers.push(sections[i]);
+		}
+	} else {
+		for (let i = 0; i <= sections.length - 1; i++) {
+			wrappers.push(sections[i]);
+		}
+	}
+
+	for (let i = 0; i < wrappers.length; i++) {
+		if (wrappers[i].className.includes('carousel') || wrappers[i].id.endsWith('Wrapper')) {
+			if (this.inViewport(wrappers[i])) {
+				if (wrappers[i].className.includes('carousel')) {
+					return '';
+				}
+				return 'S' + wrappers[i].id.slice(1, -'Wrapper'.length);
+			}
+		}
+	}
+
+	return 0;
   }
 
   animateFade(el, fadeOut) {
