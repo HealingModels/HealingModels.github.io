@@ -146,6 +146,7 @@
 		this.replaceAmpImages(response);
 		this.removeElements(response, "amp-position-observer");
 		this.removeElements(response, "amp-animation");
+		this.removeElements(response, "script");
 		this.installScrollListener(response);
 	}
 
@@ -441,4 +442,5 @@
     }, 50);
   }  
 }
+
 const router = new Router();</script><style id="pageStyles"></style><style id="svgStyles"></style><div id="root"></div></div><amp-install-serviceworker class="i-amphtml-layout-nodisplay" hidden i-amphtml-layout="nodisplay" layout="nodisplay" src="sw.js"></amp-install-serviceworker></div>
